@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meta Keywords Scraper</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result p {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>find keyword</h1>
+
+    <div class="container">
+        <form id="scrape-form">
+            <label for="url">Enter the URL of the website:</label>
+            <input type="text" id="url" name="url" placeholder="https://example.com" required>
+            <button type="submit">find</button>
+        </form>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('scrape-form').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent form from submitting the traditional way
+
+            const url = document.getElementById('url').value;
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = "Processing...";
+
+            try {
+                // Make a request to the Node.js server to scrape meta tags
+                const response = await fetch('/scrape', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url })
+                });
+
+                const data = await response.json();
+
+                // Clear previous results
+                resultDiv.innerHTML = '';
+
+                // Display the result
+                if (data.success) {
+                    let output = '<h3>Meta Information Found:</h3>';
+                    for (const key in data.metaData) {
+                        output += `<p><strong>${key.replace(/_/g, ' ')}:</strong> ${data.metaData[key]}</p>`;
+                    }
+                    resultDiv.innerHTML = output;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">Error: ${data.message}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">An error occurred: ${error.message}</p>`;
+            }
+        });
+    </script>
+
+</body>
+</html>
